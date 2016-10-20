@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="ISO-8859-1">
+    <title>Solr auto complete</title>
+    <link
+            href="http://code.jquery.com/ui/1.10.4/themes/ui-lightness/jquery-ui.css"
+            rel="stylesheet"></link>
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+    <!-- http://localhost:8983/solr/wiki/select?q=*%3A*&wt=json&indent=true -->
+    <!-- http://localhost:8983/solr/wiki/suggest?suggest=true&suggest.build=true&wt=json&suggest.q=elec -->
+    <script>
+        $(function() {
+            //var URL_PREFIX = "http://localhost:8983/solr/wiki/select?q=doctitle%3A*";
+            //http://localhost:8983/solr/wiki/select?q=wordPrefix%3AAma&fl=wordPrefix&wt=json&indent=true
+            //var URL_PREFIX = "http://localhost:8983/solr/wiki/suggest?suggest=true&suggest.build=true&wt=json&suggest.q=*";
+            var URL_PREFIX = "http://localhost:8983/solr/wiki/select?q=wordPrefix%3A";
+            //var URL_SUFFIX = "*&wt=json";
+            var URL_SUFFIX = "*&fl=wordPrefix&wt=json&indent=true";
+            $("#searchBox").autocomplete({
+                source : function(request, response) {
+                    var URL = URL_PREFIX + $("#searchBox").val() + URL_SUFFIX;
+                    $.ajax({
+                        url : URL,
+                        success : function(data) {
+                            //var docs = JSON.stringify(data.suggest.default['*' + $("#searchBox").val() + '*']);
+                            var docs = JSON.stringify(data.response)
+                            var jsonData = JSON.parse(docs);
+                            response($.map(jsonData.docs, function(value, key) {
+                                return {
+                                    label : value.wordPrefix
+                                }
+                            }));
+                        },
+                        dataType : 'jsonp',
+                        jsonp : 'json.wrf'
+                    });
+                },
+                minLength : 1
+            })
+        });
+    </script>
+</head>
+<body>
+<div>
+    <p>Search</p>
+    <label for="searchBox">Tags: </label> <input id="searchBox"></input>
+</div>
+</body>
+</html>
